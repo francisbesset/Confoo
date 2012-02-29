@@ -6,7 +6,7 @@
 
     <h2>Free registration</h2>
 
-    <form action="{{ path('registration') }}" method="post">
+    <form novalidate action="{{ path('registration') }}" method="post">
         {{ form_widget(form) }}
         <div>
             <button type="submit">Register</button>

@@ -12,4 +12,17 @@ use Doctrine\ORM\EntityRepository;
  */
 class UserRepository extends EntityRepository
 {
+    public function getMostRecentUsers($limit)
+    {
+        $q = $this
+            ->createQueryBuilder('u')
+            ->where('u.isActive = :active')
+            ->orderBy('u.id', 'DESC')
+            ->setMaxResults($limit)
+            ->setParameter('active', true)
+            ->getQuery()
+        ;
+
+        return $q->getResult();
+    }
 }

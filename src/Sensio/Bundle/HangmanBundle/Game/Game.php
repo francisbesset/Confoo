@@ -10,20 +10,16 @@ class Game
 
     private $attempts;
 
-    public function __construct(Word $word, $attempts = 0)
+    private $triedLetters;
+
+    private $foundLetters;
+
+    public function __construct(Word $word, $attempts = 0, $triedLetters = array(), $foundLetters = array())
     {
         $this->word = $word;
         $this->attempts = (int) $attempts;
-    }
-
-    public function getContext()
-    {
-        return array(
-            'word'          => (string) $this->word,
-            'attempts'      => $this->attempts,
-            'found_letters' => $this->word->getFoundLetters(),
-            'tried_letters' => $this->word->getTriedLetters()
-        );
+        $this->triedLetters = $triedLetters;
+        $this->foundLetters = $foundLetters;
     }
 
     public function getRemainingAttempts()
@@ -33,7 +29,7 @@ class Game
 
     public function isLetterFound($letter)
     {
-        return in_array($letter, $this->word->getFoundLetters());
+        return in_array($letter, $this->getFoundLetters());
     }
 
     public function isHanged()
@@ -61,6 +57,23 @@ class Game
         return $this->attempts;
     }
 
+    public function getTriedLetters()
+    {
+        return $this->triedLetters;
+    }
+
+    public function getFoundLetters()
+    {
+        return $this->foundLetters;
+    }
+
+    public function reset()
+    {
+        $this->attempts = 0;
+        $this->triedLetters = array();
+        $this->foundLetters = array();
+    }
+
     public function tryWord($word)
     {
         if ($word === $this->word->getWord()) {
@@ -82,8 +95,12 @@ class Game
             $result = false;
         }
 
+        $this->triedLetters[] = $letter;
+
         if (false === $result) {
             $this->attempts++;
+        } else {
+            $this->foundLetters[] = $letter;
         }
 
         return $result;

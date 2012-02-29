@@ -2,17 +2,31 @@
 
 namespace Sensio\Bundle\HangmanBundle\Game;
 
-use Symfony\Component\HttpFoundation\SessionStorage\SessionStorageInterface;
+use Doctrine\Common\Persistence\ObjectManager;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\SecurityContext;
+use Sensio\Bundle\HangmanBundle\Entity\GameData;
 
 class GameContext
 {
-    private $storage;
+    private $em;
+
+    private $securityContext;
+
+    private $repository;
 
     private $wordList;
 
-    public function __construct(SessionStorageInterface $storage, WordList $list)
+    /**
+     * @var GameData
+     */
+    private $game;
+
+    public function __construct(ObjectManager $em, SecurityContext $securityContext, WordList $list)
     {
-        $this->storage  = $storage;
+        $this->em = $em;
+        $this->repository = $em->getRepository('SensioHangmanBundle:GameData');
+        $this->securityContext = $securityContext;
         $this->wordList = $list;
     }
 
@@ -21,9 +35,9 @@ class GameContext
         return $this->wordList;
     }
 
-    public function reset()
+    public function getGameData()
     {
-        $this->storage->write('hangman', array());
+        return $this->game;
     }
 
     public function newGame($length)
@@ -36,21 +50,34 @@ class GameContext
         return new Word($this->wordList->getRandomWord($length));
     }
 
-    public function loadGame()
+    public function loadGame($token)
     {
-        $data = $this->storage->read('hangman');
-
-        if (!count($data)) {
+        if (!$this->game = $this->repository->findOneBy(array('token' => $token))) {
             return false;
         }
 
-        $word = new Word($data['word'], $data['found_letters'], $data['tried_letters']);
+        $word = new Word(
+            $this->game->getWord(),
+            $this->game->getFoundLetters(),
+            $this->game->getTriedLetters()
+        );
 
-        return new Game($word, $data['attempts']);
+        return new Game($word, $this->game->getAttempts());
     }
 
     public function save(Game $game)
     {
-        $this->storage->write('hangman', $game->getContext());
+        if (null === $this->game) {
+            $this->game = new GameData();
+            $this->game->setPlayer($this->securityContext->getToken()->getUser());
+            $this->game->setWord($game->getWord());
+        }
+
+        $this->game->setAttempts($game->getAttempts());
+        $this->game->setFoundLetters($game->getWord()->getFoundLetters());
+        $this->game->setTriedLetters($game->getWord()->getTriedLetters());
+
+        $this->em->persist($this->game);
+        $this->em->flush();
     }
 }

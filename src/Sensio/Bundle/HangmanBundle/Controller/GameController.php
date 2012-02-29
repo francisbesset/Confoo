@@ -32,27 +32,33 @@ class GameController extends Controller
         $context = $this->get('hangman.game_context');
         $length  = $request->query->get('length', $this->container->getParameter('hangman.word_length'));
 
-        if (!$game = $context->loadGame()) {
+        if (!$game = $context->loadGame($request->get('token'))) {
             $game = $context->newGame($length);
             $context->save($game);
         }
 
-        return array('game' => $game);
+        return array(
+            'game' => $game,
+            'token' => $context->getGameData()->getToken()
+        );
     }
 
     /**
      * This action allows the player to try to guess a letter.
      *
-     * @Route("/letter/{letter}", name="play_letter", requirements={ "letter"="[A-Z]" })
+     * @Route("/{token}/letter/{letter}", name="play_letter", requirements={ 
+     *     "letter"="[A-Z]",
+     *     "token"="[a-f0-9]{10}"
+     * })
      *
      * @param string $letter The letter the user wants to try
      * @return RedirectResponse
      */
-    public function letterAction($letter)
+    public function letterAction($token, $letter)
     {
         $context = $this->get('hangman.game_context');
 
-        if (!$game = $context->loadGame()) {
+        if (!$game = $context->loadGame($token)) {
             throw $this->createNotFoundException('Unable to load the previous game context.');
         }
 
@@ -60,30 +66,38 @@ class GameController extends Controller
         $context->save($game);
 
         if ($game->isWon()) {
-            return $this->redirect($this->generateUrl('game_won'));
+            return $this->redirect($this->generateUrl('game_won', array(
+                'token' => $token
+            )));
         }
 
         if ($game->isHanged()) {
-            return $this->redirect($this->generateUrl('game_hanged'));
+            return $this->redirect($this->generateUrl('game_hanged', array(
+                'token' => $token
+            )));
         }
 
-        return $this->redirect($this->generateUrl('hangman_game'));
+        return $this->redirect($this->generateUrl('hangman_game', array(
+            'token' => $token
+        )));
     }
 
     /**
      * This action allows the player to try to guess the word.
      *
-     * @Route("/word", name="play_word")
+     * @Route("/{token}/word", name="play_word", requirements={ 
+     *     "token"="[a-f0-9]{10}"
+     * })
      * @Method("POST")
      *
      * @param Request $request The Request object
      * @return RedirectResponse
      */
-    public function wordAction(Request $request)
+    public function wordAction($token, Request $request)
     {
         $context = $this->get('hangman.game_context');
 
-        if (!$game = $context->loadGame()) {
+        if (!$game = $context->loadGame($token)) {
             throw $this->createNotFoundException('Unable to load the previous game context.');
         }
 
@@ -91,26 +105,32 @@ class GameController extends Controller
         $context->save($game);
 
         if ($game->isWon()) {
-            return $this->redirect($this->generateUrl('game_won'));
+            return $this->redirect($this->generateUrl('game_won', array(
+                'token' => $token
+            )));
         }
 
-        return $this->redirect($this->generateUrl('game_hanged'));
+        return $this->redirect($this->generateUrl('game_hanged', array(
+            'token' => $token
+        )));
     }
 
     /**
      * This action displays the hanged page.
      *
-     * @Route("/hanged", name="game_hanged")
+     * @Route("/{token}/hanged", name="game_hanged", requirements={ 
+     *     "token"="[a-f0-9]{10}"
+     * })
      * @Template()
      *
      * @return array Template variables
      * @throws NotFoundHttpException
      */
-    public function hangedAction()
+    public function hangedAction($token)
     {
         $context = $this->get('hangman.game_context');
 
-        if (!$game = $context->loadGame()) {
+        if (!$game = $context->loadGame($token)) {
             throw $this->createNotFoundException('Unable to load the previous game context.');
         }
 
@@ -124,17 +144,19 @@ class GameController extends Controller
     /**
      * This action displays the winning page.
      *
-     * @Route("/won", name="game_won")
+     * @Route("/{token}/won", name="game_won", requirements={ 
+     *     "token"="[a-f0-9]{10}"
+     * })
      * @Template()
      *
      * @return array Template variables
      * @throws NotFoundHttpException
      */
-    public function wonAction()
+    public function wonAction($token)
     {
         $context = $this->get('hangman.game_context');
 
-        if (!$game = $context->loadGame()) {
+        if (!$game = $context->loadGame($token)) {
             throw $this->createNotFoundException('Unable to load the previous game context.');
         }
 
@@ -148,14 +170,22 @@ class GameController extends Controller
     /**
      * This action allows the user to reset the hangman game.
      *
-     * @Route("/reset", name="game_reset")
+     * @Route("/{token}/reset", name="game_reset", requirements={ 
+     *     "token"="[a-f0-9]{10}"
+     * })
      *
      * @return RedirectResponse
      */
     public function resetAction()
     {
         $context = $this->get('hangman.game_context');
-        $context->reset();
+
+        if (!$game = $context->loadGame($token)) {
+            throw $this->createNotFoundException('Unable to load the previous game context.');
+        }
+
+        $game->reset();
+        $context->save($game);
 
         return $this->redirect($this->generateUrl('hangman_game'));
     }

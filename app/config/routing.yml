@@ -1,6 +1,16 @@
 _homepage:
     pattern:  /
-    defaults: { _controller: SensioHangmanBundle:Game:index }
+    defaults: { _controller: SensioHangmanBundle:User:registration }
+
+security_check:
+    pattern:  /auth
+
+login:
+    pattern:  /login
+    defaults: { _controller: SensioHangmanBundle:User:login }
+
+logout:
+    pattern:  /logout
 
 SensioHangmanBundle:
     resource: "@SensioHangmanBundle/Controller/"
@@ -8,6 +18,6 @@ SensioHangmanBundle:
     prefix:   /game
 
 # Internal routing configuration to handle ESI
-#_internal:
-#   resource: "@FrameworkBundle/Resources/config/routing/internal.xml"
-#   prefix:   /_internal
+_internal:
+   resource: "@FrameworkBundle/Resources/config/routing/internal.xml"
+   prefix:   /_internal

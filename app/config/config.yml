@@ -8,8 +8,8 @@ parameters:
         - "%kernel.root_dir%/data/words.xml"
 
 framework:
-    #esi:             ~
-    #translator:      { fallback: %locale% }
+    esi:             ~
+    translator:      { fallback: %locale% }
     secret:          %secret%
     charset:         UTF-8
     router:          { resource: "%kernel.root_dir%/config/routing.yml" }

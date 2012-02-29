@@ -25,7 +25,7 @@
         <br class="clearfix" />
 
         <p class="attempts">
-            <a href="{{ path('game_reset') }}">Reset the game</a>
+            <a href="{{ path('game_reset', { 'token': token }) }}">Reset the game</a>
         </p>
 
         <br class="clearfix" />
@@ -35,7 +35,7 @@
         <ul>
             {% for letter in 'A'..'Z' %}
                 <li class="letter">
-                    <a href="{{ path('play_letter', { 'letter': letter }) }}">
+                    <a href="{{ path('play_letter', { 'letter': letter, 'token': token }) }}">
                         {{ letter }}
                     </a>
                 </li>
@@ -44,7 +44,7 @@
 
     <h2>Try a word</h2>
 
-        <form action="{{ path('play_word') }}" method="post">
+        <form action="{{ path('play_word', { 'token': token }) }}" method="post">
             <p>
                 <label for="word">Word:</label>
                 <input type="text" name="word"/>

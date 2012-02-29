@@ -7,6 +7,10 @@ parameters:
     hangman_dictionaries:
         - "%kernel.root_dir%/../src/Sensio/Bundle/HangmanBundle/Tests/Fixtures/words.txt"
 
+doctrine:
+    dbal:
+        dbname:   confoo2012_test
+
 framework:
     test: ~
     session:

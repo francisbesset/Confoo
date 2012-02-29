@@ -1,0 +1,9 @@
+<ul class="list date-list">
+
+{% for user in users %}
+    <li class="{{ loop.first ? 'first' : (loop.last ? 'last' : 'item') }} ">
+        <a href="#">{{ user.username|capitalize }}</a>
+    </li>
+{% endfor %}
+
+</ul>

@@ -2,19 +2,22 @@
 
 namespace Sensio\Bundle\HangmanBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
 
 /**
  * Sensio\Bundle\HangmanBundle\Entity\User
  *
  * @ORM\Table(name="sl_users")
  * @ORM\Entity(repositoryClass="Sensio\Bundle\HangmanBundle\Entity\UserRepository")
- * @UniqueEntity({ "username" }, message="This username already exists.")
- * @UniqueEntity({ "email" }, message="This email address already exists.")
+ * @UniqueEntity(fields={ "username" }, message="This username already exists.")
+ * @UniqueEntity(fields={ "email" }, message="This email address already exists.")
  */
-class User
+class User implements UserInterface
 {
     /**
      * @var integer $id
@@ -32,7 +35,7 @@ class User
      * @Assert\NotBlank()
      * @Assert\MinLength(6)
      * @Assert\MaxLength(15)
-     * @Assert\Regex("/^[a-z0-9]+$/i")
+     * @Assert\Regex(pattern="/^[a-z0-9]+$/i", message="Username only accepts letters and digits.")
      */
     private $username;
 
@@ -47,8 +50,6 @@ class User
      * @var string $password
      *
      * @ORM\Column(name="password", type="string", length=100)
-     * @Assert\NotBlank()
-     * @Assert\MinLength(6)
      */
     private $password;
 
@@ -68,9 +69,48 @@ class User
      */
     private $isActive;
 
+    /**
+     * @Assert\NotBlank()
+     * @Assert\MinLength(6)
+     */
+    private $rawPassword;
+
+    /**
+     * @ORM\OneToMany(targetEntity="GameData", mappedBy="player", cascade={"remove"})
+     *
+     */
+    private $games;
+
     public function __construct()
     {
         $this->isActive = true;
+        $this->salt = sha1(uniqid().rand(0, 99999999).microtime());
+        $this->games = new ArrayCollection();
+    }
+
+    public function getGames()
+    {
+        return $this->games;
+    }
+
+    public function setRawPassword($rawPassword)
+    {
+        $this->rawPassword = $rawPassword;
+    }
+
+    public function getRawPassword()
+    {
+        return $this->rawPassword;
+    }
+
+    public function updatePassword(PasswordEncoderInterface $encoder)
+    {
+        $this->password = $encoder->encodePassword(
+            $this->rawPassword,
+            $this->salt
+        );
+
+        $this->eraseCredentials();
     }
 
     /**
@@ -181,5 +221,20 @@ class User
     public function getIsActive()
     {
         return $this->isActive;
+    }
+
+    public function getRoles()
+    {
+        return array('ROLE_PLAYER');
+    }
+
+    public function eraseCredentials()
+    {
+        $this->rawPassword = null;
+    }
+
+    public function equals(UserInterface $user)
+    {
+        return $this->username === $user->getUsername();
     }
 }
