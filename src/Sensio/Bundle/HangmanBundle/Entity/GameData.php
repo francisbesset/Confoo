@@ -74,20 +74,20 @@ class GameData
     /**
      * @var datetime $startAt
      *
-     * @ORM\Column(name="startAt", type="datetime")
+     * @ORM\Column(name="start_at", type="datetime")
      */
     private $startAt;
 
     /**
      * @var datetime $endAt
      *
-     * @ORM\Column(name="endAt", type="datetime", nullable=true)
+     * @ORM\Column(name="end_at", type="datetime", nullable=true)
      */
     private $endAt;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="games")
-     *
+     * @ORM\JoinColumn(name="player_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $player;
 
@@ -199,7 +199,11 @@ class GameData
      */
     public function getTriedLetters()
     {
-        return explode(',', $this->triedLetters);
+        if (!empty($this->triedLetters)) {
+            return explode(',', $this->triedLetters);
+        }
+
+        return array();
     }
 
     /**
@@ -221,7 +225,11 @@ class GameData
      */
     public function getFoundLetters()
     {
-        return explode(',', $this->foundLetters);
+        if (!empty($this->foundLetters)) {
+            return explode(',', $this->foundLetters);
+        }
+
+        return array();
     }
 
     /**

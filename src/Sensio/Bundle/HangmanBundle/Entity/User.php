@@ -76,7 +76,7 @@ class User implements UserInterface
     private $rawPassword;
 
     /**
-     * @ORM\OneToMany(targetEntity="GameData", mappedBy="player", cascade={"remove"})
+     * @ORM\OneToMany(targetEntity="GameData", mappedBy="player")
      *
      */
     private $games;

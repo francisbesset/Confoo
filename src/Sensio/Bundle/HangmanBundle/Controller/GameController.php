@@ -7,10 +7,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Sensio\Bundle\HangmanBundle\Game\Game;
-use Sensio\Bundle\HangmanBundle\Game\GameContext;
-use Sensio\Bundle\HangmanBundle\Game\Word;
-use Sensio\Bundle\HangmanBundle\Game\WordList;
 
 /**
  * @Route("/hangman")
@@ -176,7 +172,7 @@ class GameController extends Controller
      *
      * @return RedirectResponse
      */
-    public function resetAction()
+    public function resetAction($token)
     {
         $context = $this->get('hangman.game_context');
 

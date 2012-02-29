@@ -9,7 +9,9 @@ use Sensio\Bundle\HangmanBundle\Entity\User;
 class GameControllerTest extends WebTestCase
 {
     private $client;
+
     private $em;
+
     private $user;
 
     private function authenticate()
@@ -87,6 +89,19 @@ class GameControllerTest extends WebTestCase
             '#You found the word <strong>php<\/strong>#',
             $response->getContent()
         );
+    }
+
+    public function testResetGameAction()
+    {
+        $crawler = $this->client->request('GET', '/game/hangman/');
+        $crawler = $this->playLetter('P');
+
+        $link = $crawler->selectLink('Reset the game')->link();
+        $this->client->click($link);
+        $crawler = $this->client->followRedirect();
+
+        $this->assertEquals(0, $crawler->filter('#content .word_letters .guessed')->count());
+        $this->assertEquals(3, $crawler->filter('#content .word_letters .hidden')->count());
     }
 
     private function playWord($word)

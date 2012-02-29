@@ -47,7 +47,7 @@ class GameContext
 
     public function getRandomWord($length)
     {
-        return new Word($this->wordList->getRandomWord($length));
+        return $this->wordList->getRandomWord($length);
     }
 
     public function loadGame($token)
@@ -56,13 +56,12 @@ class GameContext
             return false;
         }
 
-        $word = new Word(
+        return new Game(
             $this->game->getWord(),
-            $this->game->getFoundLetters(),
-            $this->game->getTriedLetters()
+            $this->game->getAttempts(),
+            $this->game->getTriedLetters(),
+            $this->game->getFoundLetters()
         );
-
-        return new Game($word, $this->game->getAttempts());
     }
 
     public function save(Game $game)
@@ -74,8 +73,8 @@ class GameContext
         }
 
         $this->game->setAttempts($game->getAttempts());
-        $this->game->setFoundLetters($game->getWord()->getFoundLetters());
-        $this->game->setTriedLetters($game->getWord()->getTriedLetters());
+        $this->game->setFoundLetters($game->getFoundLetters());
+        $this->game->setTriedLetters($game->getTriedLetters());
 
         $this->em->persist($this->game);
         $this->em->flush();

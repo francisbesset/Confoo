@@ -14,9 +14,9 @@ class Game
 
     private $foundLetters;
 
-    public function __construct(Word $word, $attempts = 0, $triedLetters = array(), $foundLetters = array())
+    public function __construct($word, $attempts = 0, array $triedLetters = array(), array $foundLetters = array())
     {
-        $this->word = $word;
+        $this->word = strtolower($word);
         $this->attempts = (int) $attempts;
         $this->triedLetters = $triedLetters;
         $this->foundLetters = $foundLetters;
@@ -29,7 +29,7 @@ class Game
 
     public function isLetterFound($letter)
     {
-        return in_array($letter, $this->getFoundLetters());
+        return in_array(strtolower($letter), $this->foundLetters);
     }
 
     public function isHanged()
@@ -39,7 +39,9 @@ class Game
 
     public function isWon()
     {
-        return $this->word->isGuessed();
+        $diff = array_diff($this->getWordLetters(), $this->foundLetters);
+
+        return 0 === count($diff);
     }
 
     public function getWord()
@@ -49,7 +51,7 @@ class Game
 
     public function getWordLetters()
     {
-        return $this->word->split();
+        return str_split($this->word);
     }
 
     public function getAttempts()
@@ -76,8 +78,8 @@ class Game
 
     public function tryWord($word)
     {
-        if ($word === $this->word->getWord()) {
-            $this->word->guessed();
+        if ($word === $this->word) {
+            $this->foundLetters = array_unique($this->getWordLetters());
 
             return true;
         }
@@ -89,20 +91,28 @@ class Game
 
     public function tryLetter($letter)
     {
-        try {
-            $result = $this->word->tryLetter($letter);
-        } catch (\InvalidArgumentException $e) {
-            $result = false;
+        $letter = strtolower($letter);
+
+        if (0 === preg_match('/^[a-z]$/', $letter)) {
+            throw new \InvalidArgumentException(sprintf('The letter "%s" is not a valid ASCII character matching [a-z].', $letter));
+        }
+
+        if (in_array($letter, $this->triedLetters)) {
+            $this->attempts++;
+
+            return false;
+        }
+
+        if (false !== strpos($this->word, $letter)) {
+            $this->foundLetters[] = $letter;
+            $this->triedLetters[] = $letter;
+
+            return true;
         }
 
         $this->triedLetters[] = $letter;
+        $this->attempts++;
 
-        if (false === $result) {
-            $this->attempts++;
-        } else {
-            $this->foundLetters[] = $letter;
-        }
-
-        return $result;
+        return false;
     }
 }
