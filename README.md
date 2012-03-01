@@ -10,6 +10,10 @@ Install vendor libraries:
     $ cd /path/to/HangmanGame
     $ bin/vendors install
 
+Running the test suite is as simple as launching this command:
+
+    $ ./run_tests
+
 Then, run the game in your web browser:
 
     http://localhost/HangmanGame/web/app_dev.php/game/hangman/?length=8
