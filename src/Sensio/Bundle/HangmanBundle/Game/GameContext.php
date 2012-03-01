@@ -20,7 +20,7 @@ class GameContext
     /**
      * @var GameData
      */
-    private $game;
+    private $data;
 
     public function __construct(ObjectManager $em, SecurityContext $securityContext, WordList $list)
     {
@@ -37,7 +37,7 @@ class GameContext
 
     public function getGameData()
     {
-        return $this->game;
+        return $this->data;
     }
 
     public function newGame($length)
@@ -52,31 +52,23 @@ class GameContext
 
     public function loadGame($token)
     {
-        if (!$this->game = $this->repository->findOneBy(array('token' => $token))) {
+        if (!$this->data = $this->repository->findOneBy(array('token' => $token))) {
             return false;
         }
 
-        return new Game(
-            $this->game->getWord(),
-            $this->game->getAttempts(),
-            $this->game->getTriedLetters(),
-            $this->game->getFoundLetters()
-        );
+        return $this->data->toGame();
     }
 
     public function save(Game $game)
     {
-        if (null === $this->game) {
-            $this->game = new GameData();
-            $this->game->setPlayer($this->securityContext->getToken()->getUser());
-            $this->game->setWord($game->getWord());
+        if (null === $this->data) {
+            $this->data = new GameData();
+            $this->data->setPlayer($this->securityContext->getToken()->getUser());
+            $this->data->setWord($game->getWord());
         }
 
-        $this->game->setAttempts($game->getAttempts());
-        $this->game->setFoundLetters($game->getFoundLetters());
-        $this->game->setTriedLetters($game->getTriedLetters());
-
-        $this->em->persist($this->game);
+        $this->data->fromGame($game);
+        $this->em->persist($this->data);
         $this->em->flush();
     }
 }

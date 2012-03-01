@@ -88,6 +88,11 @@ class User implements UserInterface
         $this->games = new ArrayCollection();
     }
 
+    public function __toString()
+    {
+        return $this->username;
+    }
+
     public function getGames()
     {
         return $this->games;

@@ -295,3 +295,15 @@ ul h4 {
 #page .guessed {
     background: green;
 }
+
+.list .status-won {
+    color: green;
+}
+
+.list .status-failed {
+    color: red;
+}
+
+.list .status-started {
+    color: orange;
+}

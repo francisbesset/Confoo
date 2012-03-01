@@ -1,0 +1,21 @@
+<div class="date-list">
+
+<ul class="list games-list">
+
+    {% for game in games %}
+
+        <li class="{{ loop.first ? 'first' : (loop.last ? 'last' : 'item') }}">
+            <span class="status-{{ game.status }}">
+                {% if game.won %}
+                    {{ game.player }} won his game!
+                {% elseif game.lost %}
+                    {{ game.player }} lost his game!
+                {% else %}
+                    {{ game.player }} is playing!
+                {% endif %}
+            </span>
+        </li>
+
+    {% endfor %}
+
+</ul>

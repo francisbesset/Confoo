@@ -3,6 +3,7 @@
 namespace Sensio\Bundle\HangmanBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Sensio\Bundle\HangmanBundle\Game\Game;
 
 /**
  * Sensio\Bundle\HangmanBundle\Entity\GameData
@@ -13,6 +14,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class GameData
 {
+    const STATUS_STARTED = 'started';
+    const STATUS_WON     = 'won';
+    const STATUS_FAILED  = 'failed';
+
     /**
      * @var integer $id
      *
@@ -96,7 +101,7 @@ class GameData
         $this->attempts = 0;
         $this->score    = 0;
         $this->startAt  = new \DateTime();
-        $this->status   = 'started';
+        $this->status   = self::STATUS_STARTED;
         $this->token    = substr(sha1(uniqid().rand(0,99999)), 0, 10);
     }
 
@@ -310,5 +315,48 @@ class GameData
     public function getEndAt()
     {
         return $this->endAt;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     */
+    public function preUpdate()
+    {
+        if (null === $this->endAt
+            && in_array($this->status, array(self::STATUS_WON, self::STATUS_FAILED))) {
+            $this->endAt = new \DateTime();
+        }
+    }
+
+    public function isWon()
+    {
+        return self::STATUS_WON === $this->status;
+    }
+
+    public function isLost()
+    {
+        return self::STATUS_FAILED === $this->status;
+    }
+
+    public function toGame()
+    {
+        return new Game($this->word, $this->attempts, $this->getTriedLetters(), $this->getFoundLetters());
+    }
+
+    public function fromGame(Game $game)
+    {
+        $this->setAttempts($game->getAttempts());
+        $this->setFoundLetters($game->getFoundLetters());
+        $this->setTriedLetters($game->getTriedLetters());
+
+        if ($game->isWon()) {
+            $this->score  = $game->getRemainingAttempts();
+            $this->status = self::STATUS_WON;
+        }
+
+        if ($game->isHanged()) {
+            $this->status = self::STATUS_FAILED;
+        }
     }
 }
