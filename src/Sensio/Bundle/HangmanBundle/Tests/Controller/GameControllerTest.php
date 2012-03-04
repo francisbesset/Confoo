@@ -141,6 +141,10 @@ class GameControllerTest extends WebTestCase
         $this->em->remove($this->user);
         $this->em->flush();
 
+        // Tip to avoid "Too Many Connections"
+        $doctrine = $this->getContainer()->get('doctrine');
+        $doctrine->getConnection()->close();
+
         $this->em     = null;
         $this->user   = null;
         $this->client = null;
