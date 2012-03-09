@@ -23,14 +23,21 @@ class GameContext
      */
     private $data;
 
-    public function __construct(ObjectManager $em, SecurityContext $securityContext, WordList $list)
+    public function __construct(WordList $list, SecurityContext $securityContext = null, ObjectManager $em = null)
     {
         $this->em = $em;
-        $this->user = $securityContext->getToken()->getUser();
         $this->wordList = $list;
 
-        $this->repository = $em->getRepository('SensioHangmanBundle:GameData');
-        $this->repository->setUser($this->user);
+        if (null !== $securityContext && $securityContext->getToken()) {
+            $this->user = $securityContext->getToken()->getUser();
+        }
+
+        if (null !== $em) {
+            $this->repository = $em->getRepository('SensioHangmanBundle:GameData');
+            if ($this->user) {
+                $this->repository->setUser($this->user);
+            }
+        }
     }
 
     public function getWordList()

@@ -37,6 +37,11 @@ class Game
         return static::MAX_ATTEMPTS === $this->attempts;
     }
 
+    public function isOver()
+    {
+        return $this->isWon() || $this->isHanged();
+    }
+
     public function isWon()
     {
         $diff = array_diff($this->getWordLetters(), $this->foundLetters);
