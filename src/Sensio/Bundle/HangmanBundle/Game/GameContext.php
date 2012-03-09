@@ -3,6 +3,7 @@
 namespace Sensio\Bundle\HangmanBundle\Game;
 
 use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\NoResultException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\SecurityContext;
 use Sensio\Bundle\HangmanBundle\Entity\GameData;
@@ -11,7 +12,7 @@ class GameContext
 {
     private $em;
 
-    private $securityContext;
+    private $user;
 
     private $repository;
 
@@ -25,9 +26,11 @@ class GameContext
     public function __construct(ObjectManager $em, SecurityContext $securityContext, WordList $list)
     {
         $this->em = $em;
-        $this->repository = $em->getRepository('SensioHangmanBundle:GameData');
-        $this->securityContext = $securityContext;
+        $this->user = $securityContext->getToken()->getUser();
         $this->wordList = $list;
+
+        $this->repository = $em->getRepository('SensioHangmanBundle:GameData');
+        $this->repository->setUser($this->user);
     }
 
     public function getWordList()
@@ -52,7 +55,9 @@ class GameContext
 
     public function loadGame($token)
     {
-        if (!$this->data = $this->repository->findOneBy(array('token' => $token))) {
+        try {
+            $this->data = $this->repository->findGame($token);
+        } catch (NoResultException $e) {
             return false;
         }
 
@@ -63,7 +68,7 @@ class GameContext
     {
         if (null === $this->data) {
             $this->data = new GameData();
-            $this->data->setPlayer($this->securityContext->getToken()->getUser());
+            $this->data->setPlayer($this->user);
             $this->data->setWord($game->getWord());
         }
 

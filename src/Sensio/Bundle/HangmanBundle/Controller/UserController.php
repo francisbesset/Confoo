@@ -3,7 +3,6 @@
 namespace Sensio\Bundle\HangmanBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\SecurityContext;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
@@ -25,17 +24,6 @@ class UserController extends Controller
 
         return array(
             'users' => $table->getMostRecentUsers($limit)
-        );
-    }
-
-    /** @Template() */
-    public function loginAction(Request $request)
-    {
-        $session = $request->getSession();
-
-        return array(
-            'last_username' => $session->get(SecurityContext::LAST_USERNAME),
-            'error' => $session->get(SecurityContext::AUTHENTICATION_ERROR),
         );
     }
 
@@ -70,19 +58,10 @@ class UserController extends Controller
 
                 $this->get('security.context')->setToken($token);
 
-                return $this->redirect($this->generateUrl('registration_success'));
+                return $this->redirect($this->generateUrl('hangman_game'));
             }
         }
 
         return array('form' => $form->createView());
-    }
-
-    /**
-     * @Route("/registration/success", name="registration_success")
-     * @Template()
-     */
-    public function successAction()
-    {
-        return array();
     }
 }

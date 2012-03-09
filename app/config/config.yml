@@ -2,8 +2,8 @@ imports:
     - { resource: parameters.ini }
     - { resource: security.yml }
 
-parameters:
-    hangman_dictionaries:
+sensio_hangman:
+    dictionaries:
         - "%kernel.root_dir%/data/words.txt"
         - "%kernel.root_dir%/data/words.xml"
 

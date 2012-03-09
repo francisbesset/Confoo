@@ -22,6 +22,11 @@ class SensioHangmanExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        if ('test' === $container->getParameter('kernel.environment')) {
+            $config['dictionaries'] = array(__DIR__.'/../Tests/Fixtures/words.txt');
+        }
+
+        $container->setParameter('hangman_dictionaries', $config['dictionaries']);
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
     }

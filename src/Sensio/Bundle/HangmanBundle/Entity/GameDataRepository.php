@@ -3,6 +3,7 @@
 namespace Sensio\Bundle\HangmanBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * GameDataRepository
@@ -13,6 +14,45 @@ use Doctrine\ORM\EntityRepository;
 class GameDataRepository extends EntityRepository
 {
     /**
+     * A UserInterface instance.
+     *
+     * @var UserInterface
+     */
+    private $user;
+
+    /**
+     * Sets a UserInterface object.
+     *
+     * @param UserInterface $user A User object
+     */
+    public function setUser(UserInterface $user)
+    {
+        $this->user = $user;
+    }
+
+    /**
+     * Finds a user's game with a token value.
+     *
+     * @param string $token The unique game token
+     * @return GameData
+     * @throws NoResultException
+     */
+    public function findGame($token)
+    {
+        $q = $this
+            ->createQueryBuilder('g')
+            ->leftJoin('g.player', 'p')
+            ->where('g.token = :token')
+            ->andWhere('p.username = :username')
+            ->setParameter('token', $token)
+            ->setParameter('username', $this->user->getUsername())
+            ->getQuery()
+        ;
+
+        return $q->getSingleResult();
+    }
+
+    /**
      * Returns the list of the X most recent games.
      *
      * @param integer $limit The number of games to retrieve
@@ -22,6 +62,7 @@ class GameDataRepository extends EntityRepository
     {
         $q = $this
             ->createQueryBuilder('g')
+            ->select('g, p')
             ->leftJoin('g.player', 'p')
             ->orderBy('g.startAt', 'DESC')
             ->setMaxResults($limit)

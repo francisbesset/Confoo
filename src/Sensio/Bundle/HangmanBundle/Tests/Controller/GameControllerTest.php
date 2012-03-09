@@ -118,13 +118,18 @@ class GameControllerTest extends WebTestCase
     {
         $kernel = static::createKernel();
         $kernel->boot();
-        
-        $this->em = $kernel->getContainer()->get('doctrine.orm.entity_manager');
+
+        $container = $kernel->getContainer();
+        $this->em = $container->get('doctrine.orm.entity_manager');
 
         $user = new User();
         $user->setUsername('hhamon');
-        $user->setSalt('47e92fd76bc1bf364382fc483a7bbdaf080aab51');
-        $user->setPassword('XshcSZd2zFJ8632vMPpu+XLecz6GiTXuqxvIs54j0qm5V2+NKs1zEyybV1009nEdJleV/u75KP6qKLaUQ3PmeQ==');
+
+        $factory = $container->get('security.encoder_factory');
+        $encoder = $factory->getEncoder($user);
+
+        $user->setSalt('azerty');
+        $user->setPassword($encoder->encodePassword('secret', $user->getSalt()));
         $user->setEmail('hugo.hamon@sensio.com');
 
         $this->em->persist($user);
@@ -142,7 +147,7 @@ class GameControllerTest extends WebTestCase
         $this->em->flush();
 
         // Tip to avoid "Too Many Connections"
-        $doctrine = $this->getContainer()->get('doctrine');
+        $doctrine = $this->client->getContainer()->get('doctrine');
         $doctrine->getConnection()->close();
 
         $this->em     = null;

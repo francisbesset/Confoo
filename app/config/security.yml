@@ -30,6 +30,9 @@ security:
                 target:              /login
 
     access_control:
-        - { path: ^/game/hangman, roles: ROLE_PLAYER }
-        - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/_internal, roles: IS_AUTHENTICATED_ANONYMOUSLY, ip: 127.0.0.1 }
+        - { path: ^/(login|registration)$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/(auth|logout)$, roles: [ IS_AUTHENTICATED_FULLY ] }
+        - { path: ^/game/hangman, roles: [ ROLE_PLAYER ] }
+        - { path: ^/game, roles: [ IS_AUTHENTICATED_FULLY ] }
+        - { path: ^/, roles: [ IS_AUTHENTICATED_ANONYMOUSLY ] }

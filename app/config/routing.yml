@@ -12,8 +12,18 @@ login:
 logout:
     pattern:  /logout
 
-SensioHangmanBundle:
-    resource: "@SensioHangmanBundle/Controller/"
+security:
+    resource: "@SensioHangmanBundle/Controller/SecurityController.php"
+    type:     annotation
+    prefix:   /
+
+player:
+    resource: "@SensioHangmanBundle/Controller/UserController.php"
+    type:     annotation
+    prefix:   /
+
+game:
+    resource: "@SensioHangmanBundle/Controller/GameController.php"
     type:     annotation
     prefix:   /game
 
