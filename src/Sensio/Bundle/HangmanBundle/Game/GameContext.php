@@ -4,14 +4,12 @@ namespace Sensio\Bundle\HangmanBundle\Game;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\NoResultException;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\SecurityContext;
+use Symfony\Component\Security\Core\SecurityContextInterface;
 use Sensio\Bundle\HangmanBundle\Entity\GameData;
+use Sensio\Bundle\HangmanBundle\Entity\GameRepositoryInterface;
 
 class GameContext
 {
-    private $em;
-
     private $user;
 
     private $repository;
@@ -23,20 +21,17 @@ class GameContext
      */
     private $data;
 
-    public function __construct(WordList $list, SecurityContext $securityContext = null, ObjectManager $em = null)
+    public function __construct(WordList $list, SecurityContextInterface $securityContext = null, GameRepositoryInterface $repository = null)
     {
-        $this->em = $em;
         $this->wordList = $list;
 
-        if (null !== $securityContext && $securityContext->getToken()) {
+        if (null !== $securityContext->getToken()) {
             $this->user = $securityContext->getToken()->getUser();
         }
 
-        if (null !== $em) {
-            $this->repository = $em->getRepository('SensioHangmanBundle:GameData');
-            if ($this->user) {
-                $this->repository->setUser($this->user);
-            }
+        if (null !== $repository && null !== $this->user) {
+            $this->repository = $repository;
+            $this->repository->setUser($this->user);
         }
     }
 
@@ -80,7 +75,6 @@ class GameContext
         }
 
         $this->data->fromGame($game);
-        $this->em->persist($this->data);
-        $this->em->flush();
+        $this->repository->save($this->data);
     }
 }

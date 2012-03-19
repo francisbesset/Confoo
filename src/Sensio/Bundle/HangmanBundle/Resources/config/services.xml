@@ -7,6 +7,9 @@
     <parameters>
         <parameter key="hangman.word_list.class">Sensio\Bundle\HangmanBundle\Game\WordList</parameter>
         <parameter key="hangman.game_context.class">Sensio\Bundle\HangmanBundle\Game\GameContext</parameter>
+        <parameter key="hangman.game_repository.class">Sensio\Bundle\HangmanBundle\Entity\GameDataRepository</parameter>
+        <parameter key="hangman.game_repository.entity_class">SensioHangmanBundle:GameData</parameter>
+        <parameter key="hangman.entity_manager">default</parameter>
     </parameters>
 
     <services>
@@ -16,10 +19,19 @@
             <call method="loadDictionaries"/>
         </service>
 
+        <service id="hangman.game_repository" 
+            class="%hangman.game_repository.class%"
+            factory-service="doctrine"
+            factory-method="getRepository"
+        >
+            <argument>%hangman.game_repository.entity_class%</argument>
+            <argument>%hangman.entity_manager%</argument>
+        </service>
+
         <service id="hangman.game_context" class="%hangman.game_context.class%">
             <argument type="service" id="hangman.word_list"/>
             <argument type="service" id="security.context" on-invalid="true"/>
-            <argument type="service" id="doctrine.orm.entity_manager" on-invalid="true"/>
+            <argument type="service" id="hangman.game_repository" on-invalid="true"/>
         </service>
 
     </services>
