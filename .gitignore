@@ -1,5 +1,8 @@
-app/logs
-app/cache
-coverage
-vendor
-web/bundles
+web/bundles/
+app/bootstrap.php.cache
+app/cache/*
+app/logs/*
+build/
+coverage/
+vendor/
+composer.phar

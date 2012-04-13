@@ -1,3 +1,7 @@
+jms_security_extra:
+    secure_all_services: false
+    expressions: true
+
 security:
     encoders:
         Sensio\Bundle\HangmanBundle\Entity\User:
@@ -21,18 +25,17 @@ security:
         game:
             pattern:                 ^/
             anonymous:               true
+            switch_user:             true
             form_login:    
                 login_path:          /login
                 check_path:          /auth
-                default_target_path: /game/hangman/
+                default_target_path: /game/
             logout:
                 path:                /logout
                 target:              /login
 
     access_control:
-        - { path: ^/_internal, roles: IS_AUTHENTICATED_ANONYMOUSLY, ip: 127.0.0.1 }
-        - { path: ^/(login|registration)$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/(auth|logout)$, roles: [ IS_AUTHENTICATED_FULLY ] }
-        - { path: ^/game/hangman, roles: [ ROLE_PLAYER ] }
-        - { path: ^/game, roles: [ IS_AUTHENTICATED_FULLY ] }
-        - { path: ^/, roles: [ IS_AUTHENTICATED_ANONYMOUSLY ] }
+        - { path: ^/$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/esi, roles: IS_AUTHENTICATED_ANONYMOUSLY, ip: 127.0.0.1 }
+        - { path: ^/(registration|login)$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }

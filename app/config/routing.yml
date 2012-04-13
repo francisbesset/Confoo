@@ -2,9 +2,6 @@ _homepage:
     pattern:  /
     defaults: { _controller: SensioHangmanBundle:User:registration }
 
-security_check:
-    pattern:  /auth
-
 login:
     pattern:  /login
     defaults: { _controller: SensioHangmanBundle:User:login }
@@ -12,22 +9,16 @@ login:
 logout:
     pattern:  /logout
 
-security:
-    resource: "@SensioHangmanBundle/Controller/SecurityController.php"
+login_check:
+    pattern:      /auth
+    requirements: { _method: POST }
+
+SensioHangmanBundle:
+    resource: "@SensioHangmanBundle/Controller"
     type:     annotation
     prefix:   /
-
-player:
-    resource: "@SensioHangmanBundle/Controller/UserController.php"
-    type:     annotation
-    prefix:   /
-
-game:
-    resource: "@SensioHangmanBundle/Controller/GameController.php"
-    type:     annotation
-    prefix:   /game
 
 # Internal routing configuration to handle ESI
 _internal:
    resource: "@FrameworkBundle/Resources/config/routing/internal.xml"
-   prefix:   /_internal
+   prefix:   /esi
