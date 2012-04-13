@@ -22,6 +22,16 @@ class Game
         $this->foundLetters = $foundLetters;
     }
 
+    public function getContext()
+    {
+        return array(
+            'word'          => (string) $this->word,
+            'attempts'      => $this->attempts,
+            'found_letters' => $this->foundLetters,
+            'tried_letters' => $this->triedLetters,
+        );
+    }
+
     public function getRemainingAttempts()
     {
         return static::MAX_ATTEMPTS - $this->attempts;

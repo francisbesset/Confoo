@@ -10,7 +10,7 @@ use Sensio\Bundle\HangmanBundle\Entity\GameRepositoryInterface;
 
 class GameContext
 {
-    private $user;
+    private $player;
 
     private $repository;
 
@@ -21,18 +21,43 @@ class GameContext
      */
     private $data;
 
-    public function __construct(WordList $list, SecurityContextInterface $securityContext = null, GameRepositoryInterface $repository = null)
+    public function __construct(WordList $list = null, SecurityContextInterface $securityContext = null, GameRepositoryInterface $repository = null)
     {
         $this->wordList = $list;
 
-        if (null !== $securityContext->getToken()) {
-            $this->user = $securityContext->getToken()->getUser();
+        if (null !== $securityContext && null !== $securityContext->getToken()) {
+            $this->player = $securityContext->getToken()->getUser();
         }
 
-        if (null !== $repository && null !== $this->user) {
+        if (null !== $repository && null !== $this->player) {
             $this->repository = $repository;
-            $this->repository->setUser($this->user);
+            $this->repository->setPlayer($this->player);
         }
+    }
+
+    public function setGameRepository(GameRepositoryInterface $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public function getGameRepository()
+    {
+        return $this->repository;
+    }
+
+    public function setSecurityContext(SecurityContextInterface $securityContext)
+    {
+        $this->securityContext = $securityContext;
+    }
+
+    public function getSecurityContext()
+    {
+        return $this->securityContext;
+    }
+
+    public function setWordList(WordList $wordList)
+    {
+        $this->wordList = $wordList;
     }
 
     public function getWordList()
@@ -70,7 +95,7 @@ class GameContext
     {
         if (null === $this->data) {
             $this->data = new GameData();
-            $this->data->setPlayer($this->user);
+            $this->data->setPlayer($this->player);
             $this->data->setWord($game->getWord());
         }
 

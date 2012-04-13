@@ -22,9 +22,13 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+                ->scalarNode('word_length')
+                    ->defaultValue(8)
+                ->end()
                 ->arrayNode('dictionaries')
-                    ->ignoreExtraKeys()
                     ->isRequired()
+                    ->requiresAtLeastOneElement()
+                    ->ignoreExtraKeys()
                     ->prototype('scalar')->end()
                 ->end()
             ->end()

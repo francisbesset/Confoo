@@ -6,67 +6,89 @@ use Sensio\Bundle\HangmanBundle\Game\Game;
 
 class GameTest extends \PHPUnit_Framework_TestCase
 {
-    public function testTryWordWithExpectedWord()
+    public function testGameIsHanged()
     {
         $game = new Game('php');
-        $this->assertTrue($game->tryWord('php'));
-        $this->assertTrue($game->isWon());
-        $this->assertFalse($game->isHanged());
-    }
 
-    public function testTryWordWithInvalidWord()
-    {
-        $game = new Game('php');
-        $this->assertFalse($game->tryWord('foo'));
-        $this->assertFalse($game->isWon());
+        for ($i = 1; $i <= Game::MAX_ATTEMPTS; $i++) {
+            $this->assertFalse($game->isHanged());
+            $game->tryLetter('X');
+        }
+
         $this->assertTrue($game->isHanged());
-        $this->assertEquals(0, $game->getRemainingAttempts());
     }
 
-    public function testTryLetter()
+    public function testGuessWord()
     {
         $game = new Game('php');
-        $this->assertFalse($game->tryLetter('X'));
-        $this->assertFalse($game->isLetterFound('X'));
-        $this->assertFalse($game->isWon());
 
-        $this->assertTrue($game->tryLetter('P'));
-        $this->assertTrue($game->isLetterFound('P'));
-        $this->assertFalse($game->isWon());
+        foreach (array('H', 'X', 'P') as $letter) {
+            $this->assertFalse($game->isWon());
+            $game->tryLetter($letter);
+        }
 
-        $this->assertTrue($game->tryLetter('H'));
-        $this->assertTrue($game->isLetterFound('H'));
         $this->assertTrue($game->isWon());
     }
 
-    public function testTryLetterTwiceInARow()
+    public function testTrySameLetterTwice()
     {
         $game = new Game('php');
-        $this->assertTrue($game->tryLetter('P'));
-        $this->assertTrue($game->isLetterFound('P'));
+        $game->tryLetter('H');
 
-        $this->assertFalse($game->tryLetter('P'));
-        $this->assertTrue($game->isLetterFound('P'));
-        
-    }
-
-    public function testResetGame()
-    {
-        $game = new Game('php', 3, array('x', 'h'), array('h'));
-        $this->assertEquals(3, $game->getAttempts());
-        $this->assertTrue($game->isLetterFound('H'));
-        $this->assertFalse($game->isLetterFound('X'));
-
-        $game->reset();
-        $this->assertEquals(0, $game->getAttempts());
-        $this->assertFalse($game->isLetterFound('H'));
-        $this->assertFalse($game->isLetterFound('X'));
+        $this->assertFalse($game->tryLetter('H'));
+        $this->assertEquals(1, $game->getAttempts());
     }
 
     public function testTryInvalidLetter()
     {
         $this->setExpectedException('InvalidArgumentException');
+
         $game = new Game('php');
-        $this->assertFalse($game->tryLetter('0'));
+        $game->tryLetter('é');
+    }
+
+    public function testTryWrongLetter()
+    {
+        $game = new Game('php');
+
+        $this->assertFalse($game->tryLetter('X'));
+        $this->assertEquals(1, $game->getAttempts());
+        $this->assertFalse($game->isLetterFound('X'));
+        $this->assertContains('x', $game->getTriedLetters());
+        $this->assertNotContains('x', $game->getFoundLetters());
+    }
+
+    public function testTryCorrectLetter()
+    {
+        $game = new Game('php');
+
+        $this->assertTrue($game->tryLetter('H'));
+        $this->assertEquals(0, $game->getAttempts());
+        $this->assertTrue($game->isLetterFound('H'));
+        $this->assertContains('h', $game->getTriedLetters());
+        $this->assertContains('h', $game->getFoundLetters());
+    }
+
+    public function testTryWrongWord()
+    {
+        $game = new Game('php');
+
+        $this->assertFalse($game->tryWord('foo'));
+        $this->assertFalse($game->isWon());
+        $this->assertTrue($game->isHanged());
+        $this->assertTrue($game->isOver());
+        $this->assertEquals(0, $game->getRemainingAttempts());
+    }
+
+    public function testTryCorrectWord()
+    {
+        $game = new Game('php');
+
+        $this->assertTrue($game->tryWord('php'));
+        $this->assertTrue($game->isWon());
+        $this->assertFalse($game->isHanged());
+        $this->assertTrue($game->isOver());
+        $this->assertEquals(0, $game->getAttempts());
+        $this->assertEquals(array('p', 'h'), $game->getFoundLetters());
     }
 }

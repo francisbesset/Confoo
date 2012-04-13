@@ -20,7 +20,7 @@ interface GameRepositoryInterface
      *
      * @param UserInterface $user A User object
      */
-    function setUser(UserInterface $user);
+    function setPlayer(UserInterface $user);
 
     /**
      * Persists a GameData entity to the database.

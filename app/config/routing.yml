@@ -1,10 +1,10 @@
 _homepage:
     pattern:  /
-    defaults: { _controller: SensioHangmanBundle:User:registration }
+    defaults: { _controller: SensioHangmanBundle:Player:registration }
 
 login:
     pattern:  /login
-    defaults: { _controller: SensioHangmanBundle:User:login }
+    defaults: { _controller: SensioHangmanBundle:Player:login }
 
 logout:
     pattern:  /logout

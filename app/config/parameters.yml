@@ -12,7 +12,4 @@ parameters:
     mailer_password:     ~
 
     locale:              en
-    secret:              ThisTokenIsNotSoSecretChangeIt
-
-    hangman.max_games:   5
-    hangman.word_length: 8
+    secret:              aad78dfd9b0a357b6d0ca16bd2d19ab52ea70297

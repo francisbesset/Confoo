@@ -3,6 +3,8 @@ imports:
     - { resource: security.yml }
 
 sensio_hangman:
+    word_length:      8
+
     dictionaries:
         - "%kernel.root_dir%/data/words.txt"
         - "%kernel.root_dir%/data/words.xml"

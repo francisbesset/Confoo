@@ -55,14 +55,18 @@
                 <div id="sidebar">
                     <h3>Last Games</h3>
 
-                    {% render "SensioHangmanBundle:Game:games" with { }, { 'standalone': true } %}
+                    {%
+                        render "SensioHangmanBundle:Game:games"
+                        with { 'limit': 5 },
+                        { 'standalone': true }
+                    %}
 
                     <h3>Last players</h3>
 
                     {%
-                        render "SensioHangmanBundle:User:recentUsers" with {
-                            'limit': 5
-                        }, { 'standalone': true }
+                        render "SensioHangmanBundle:Player:recent"
+                        with { 'limit': 5 },
+                        { 'standalone': true }
                     %}
 
                 </div>

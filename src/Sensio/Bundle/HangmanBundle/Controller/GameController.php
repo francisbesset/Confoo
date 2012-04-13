@@ -10,7 +10,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 
 /**
- * @Route("/hangman")
+ * @Route("/game")
  *
  */
 class GameController extends Controller
@@ -22,11 +22,10 @@ class GameController extends Controller
      * @Cache(smaxage=60)
      * @return array Template variables
      */
-    public function gamesAction()
+    public function gamesAction($limit)
     {
         $em    = $this->getDoctrine()->getEntityManager();
         $table = $em->getRepository('SensioHangmanBundle:GameData');
-        $limit = $this->container->getParameter('hangman.max_games');
 
         return array(
             'games' => $table->getMostRecentGames($limit)

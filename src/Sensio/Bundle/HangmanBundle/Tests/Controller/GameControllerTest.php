@@ -4,7 +4,8 @@ namespace Sensio\Bundle\HangmanBundle\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Sensio\Bundle\HangmanBundle\Game\Game;
-use Sensio\Bundle\HangmanBundle\Entity\User;
+use Sensio\Bundle\HangmanBundle\Entity\GameData;
+use Sensio\Bundle\HangmanBundle\Entity\Player;
 
 class GameControllerTest extends WebTestCase
 {
@@ -14,131 +15,35 @@ class GameControllerTest extends WebTestCase
 
     private $user;
 
-    private function authenticate()
-    {
-        $crawler = $this->client->request('GET', '/login');
-        $form = $crawler->selectButton('Log-in')->form();
-
-        $this->client->submit($form, array(
-            '_username' => 'hhamon',
-            '_password' => 'secret'
-        ));
-
-        $this->client->followRedirect();
-    }
-
-    public function testTryInvalidLetterAction()
-    {
-        $this->client->request('GET', '/game/hangman/');
-
-        for ($i = 1; $i <= Game::MAX_ATTEMPTS; $i++) {
-            $this->playLetter('X');
-        }
-
-        $response = $this->client->getResponse();
-        $this->assertRegexp("#Oops, you're hanged#", $response->getContent());
-    }
-
-    public function testTryLetterAction()
-    {
-        $crawler = $this->client->request('GET', '/game/hangman/');
-        $crawler = $this->playLetter('P');
-
-        $this->assertEquals(2, $crawler->filter('#content .word_letters .guessed')->count());
-        $this->assertEquals(1, $crawler->filter('#content .word_letters .hidden')->count());
-
-        $crawler = $this->playLetter('H');
-        $response = $this->client->getResponse();
-
-        $this->assertTrue($response->isSuccessful());
-        $this->assertRegexp(
-            '#You found the word <strong>php<\/strong>#',
-            $response->getContent()
-        );
-    }
-
-    private function playLetter($letter)
-    {
-        $crawler = $this->client->getCrawler();
-
-        $link = $crawler->selectLink($letter)->link();
-
-        $this->client->click($link);
-
-        return $this->client->followRedirect();
-    }
-
-    public function testTryWrongWordAction()
-    {
-        $this->playWord('foo');
-
-        $response = $this->client->getResponse();
-
-        $this->assertTrue($response->isSuccessful());
-        $this->assertRegexp("#Oops, you're hanged#", $response->getContent());
-    }
-
-    public function testTryWordAction()
-    {
-        $this->playWord('php');
-
-        $response = $this->client->getResponse();
-
-        $this->assertTrue($response->isSuccessful());
-        $this->assertRegexp(
-            '#You found the word <strong>php<\/strong>#',
-            $response->getContent()
-        );
-    }
-
-    public function testResetGameAction()
-    {
-        $crawler = $this->client->request('GET', '/game/hangman/');
-        $crawler = $this->playLetter('P');
-
-        $link = $crawler->selectLink('Reset the game')->link();
-        $this->client->click($link);
-        $crawler = $this->client->followRedirect();
-
-        $this->assertEquals(0, $crawler->filter('#content .word_letters .guessed')->count());
-        $this->assertEquals(3, $crawler->filter('#content .word_letters .hidden')->count());
-    }
-
-    private function playWord($word)
-    {
-        $crawler = $this->client->request('GET', '/game/hangman/');
-
-        $form = $crawler->selectButton('Let me guess...')->form();
-        $this->client->submit($form, array('word' => $word));
-
-        $this->client->followRedirect();
-    }
-
     public function setUp()
     {
         $kernel = static::createKernel();
         $kernel->boot();
 
         $container = $kernel->getContainer();
-        $this->em = $container->get('doctrine.orm.entity_manager');
-
-        $user = new User();
-        $user->setUsername('hhamon');
-
         $factory = $container->get('security.encoder_factory');
-        $encoder = $factory->getEncoder($user);
 
-        $user->setSalt('azerty');
-        $user->setPassword($encoder->encodePassword('secret', $user->getSalt()));
-        $user->setEmail('hugo.hamon@sensio.com');
+        $player = new Player();
+        $player->setUsername('hhamon');
+        $player->setRawPassword('secret');
+        $player->setEmail('hugo@example.com');
+        $player->encodePassword($factory->getEncoder($player));
 
-        $this->em->persist($user);
+        /*
+        $game = new GameData();
+        $game->setPlayer($player);
+        $game->setWord('azerty');
+        $game->setToken('1234567890');
+        */
+
+        $this->em = $container->get('doctrine.orm.default_entity_manager');
+        $this->em->persist($player);
+//        $this->em->persist($game);
         $this->em->flush();
+        $this->user = $player;
 
-        $this->user   = $user;
         $this->client = static::createClient();
-
-        $this->authenticate();
+        $this->client->followRedirects(true);
     }
 
     public function tearDown()
@@ -153,5 +58,73 @@ class GameControllerTest extends WebTestCase
         $this->em     = null;
         $this->user   = null;
         $this->client = null;
+    }
+
+    private function authenticate($username, $password)
+    {
+        $crawler = $this->client->request('GET', '/login');
+
+        $form = $crawler->selectButton('login')->form();
+
+        return $this->client->submit($form, array(
+            '_username' => $username,
+            '_password' => $password,
+        ));
+    }
+
+    private function playWord($word)
+    {
+        $crawler = $this->client->getCrawler();
+        $form = $crawler->selectButton('Let me guess...')->form();
+
+        return $this->client->submit($form, array('word' => $word));
+    }
+
+    public function testGuessWord()
+    {
+        $crawler = $this->authenticate('hhamon', 'secret');
+
+        foreach (array('H', 'X', 'P') as $letter) {
+            $link = $crawler->selectLink($letter)->link();
+            $crawler = $this->client->click($link);
+        }
+
+        $this->assertEquals(
+            'Congratulations!',
+            $crawler->filter('#content > h2:first-child')->text()
+        );
+    }
+
+    public function testForbidWordAction()
+    {
+        $this->client->followRedirects(false);
+
+        $this->authenticate('hhamon', 'secret');
+        $this->client->request('POST', '/game/1234567890/word');
+        $this->assertTrue($this->client->getResponse()->isNotFound());
+    }
+
+    public function testInvalidWord()
+    {
+        $this->authenticate('hhamon', 'secret');
+
+        $crawler = $this->playWord('foo');
+
+        $this->assertEquals(
+            'Game Over!',
+            $crawler->filter('#content > h2:first-child')->text()
+        );
+    }
+
+    public function testWordAction()
+    {
+        $this->authenticate('hhamon', 'secret');
+
+        $crawler = $this->playWord('php');
+
+        $this->assertEquals(
+            'Congratulations!',
+            $crawler->filter('#content > h2:first-child')->text()
+        );
     }
 }

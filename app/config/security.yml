@@ -4,35 +4,35 @@ jms_security_extra:
 
 security:
     encoders:
-        Sensio\Bundle\HangmanBundle\Entity\User:
+        Sensio\Bundle\HangmanBundle\Entity\Player:
             algorithm: sha512
             encode_as_base64: true
             iterations: 3000
 
     role_hierarchy:
-        ROLE_ADMIN:       ROLE_USER
-        ROLE_SUPER_ADMIN: [ROLE_USER, ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+        ROLE_ADMIN: [ROLE_PLAYER, ROLE_ALLOWED_TO_SWITCH]
 
     providers:
         players:
-            entity: { class: SensioHangmanBundle:User, property: username }
+            entity: { class: SensioHangmanBundle:Player, property: username }
 
     firewalls:
         dev:
             pattern:  ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        game:
-            pattern:                 ^/
-            anonymous:               true
-            switch_user:             true
+        frontend:
+            pattern:                            ^/
+            anonymous:                          true
+            switch_user:                        true
             form_login:    
-                login_path:          /login
-                check_path:          /auth
-                default_target_path: /game/
+                login_path:                     /login
+                check_path:                     /auth
+                default_target_path:            /game/
+                always_use_default_target_path: true
             logout:
-                path:                /logout
-                target:              /login
+                path:                           /logout
+                target:                         /login
 
     access_control:
         - { path: ^/$, roles: IS_AUTHENTICATED_ANONYMOUSLY }

@@ -6,7 +6,7 @@ parameters:
 
 doctrine:
     dbal:
-        dbname:   confoo2012_test
+        dbname:   hangman_test
 
 framework:
     test: ~

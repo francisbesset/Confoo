@@ -1,3 +1,4 @@
+.DS_STORE
 web/bundles/
 app/bootstrap.php.cache
 app/cache/*
@@ -6,3 +7,4 @@ build/
 coverage/
 vendor/
 composer.phar
+composer.lock

@@ -18,16 +18,16 @@ class GameDataRepository extends EntityRepository implements GameRepositoryInter
      *
      * @var UserInterface
      */
-    private $user;
+    private $player;
 
     /**
      * Sets a UserInterface object.
      *
      * @param UserInterface $user A User object
      */
-    public function setUser(UserInterface $user)
+    public function setPlayer(UserInterface $player)
     {
-        $this->user = $user;
+        $this->player = $player;
     }
 
     public function save(GameData $data)
@@ -51,7 +51,7 @@ class GameDataRepository extends EntityRepository implements GameRepositoryInter
             ->where('g.token = :token')
             ->andWhere('p.username = :username')
             ->setParameter('token', $token)
-            ->setParameter('username', $this->user->getUsername())
+            ->setParameter('username', $this->player->getUsername())
             ->getQuery()
         ;
 

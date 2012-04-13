@@ -91,7 +91,7 @@ class GameData
     private $endAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="games")
+     * @ORM\ManyToOne(targetEntity="Player", inversedBy="games")
      * @ORM\JoinColumn(name="player_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $player;
@@ -105,9 +105,9 @@ class GameData
         $this->token    = substr(sha1(uniqid().rand(0,99999)), 0, 10);
     }
 
-    public function setPlayer(User $user)
+    public function setPlayer(Player $player)
     {
-        $this->player = $user;
+        $this->player = $player;
     }
 
     public function getPlayer()

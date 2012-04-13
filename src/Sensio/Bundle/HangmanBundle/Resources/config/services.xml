@@ -29,7 +29,7 @@
         </service>
 
         <service id="hangman.game_context" class="%hangman.game_context.class%">
-            <argument type="service" id="hangman.word_list"/>
+            <argument type="service" id="hangman.word_list" on-invalid="true"/>
             <argument type="service" id="security.context" on-invalid="true"/>
             <argument type="service" id="hangman.game_repository" on-invalid="true"/>
         </service>
