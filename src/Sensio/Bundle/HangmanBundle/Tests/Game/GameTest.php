@@ -6,6 +6,28 @@ use Sensio\Bundle\HangmanBundle\Game\Game;
 
 class GameTest extends \PHPUnit_Framework_TestCase
 {
+    public function testReset()
+    {
+        $game = new Game('php', 3, array('h', 'x', 'c', 'v'), array('h'));
+        $game->reset();
+
+        $this->assertEquals('php', $game->getWord());
+        $this->assertEquals(0, $game->getAttempts());
+        $this->assertEmpty($game->getFoundLetters());
+        $this->assertEmpty($game->getTriedLetters());
+    }
+
+    public function testGetContext()
+    {
+        $game = new Game('php', 3, array('h', 'x', 'c', 'v'), array('h'));
+        $context = $game->getContext();
+
+        $this->assertArrayHasKey('word', $context);
+        $this->assertArrayHasKey('attempts', $context);
+        $this->assertArrayHasKey('tried_letters', $context);
+        $this->assertArrayHasKey('found_letters', $context);
+    }
+
     public function testGameIsHanged()
     {
         $game = new Game('php');

@@ -6,34 +6,30 @@ use Sensio\Bundle\HangmanBundle\Game\GameContext;
 
 class GameContextTest extends \PHPUnit_Framework_TestCase
 {
+    public function testUnableToLoadGame()
+    {
+        $exception = $this->getMock('Doctrine\ORM\NoResultException');
+
+        $repository = $this->getGameRepositoryMock();
+        $repository
+            ->expects($this->once())
+            ->method('findGame')
+            ->with($this->equalTo('abcdefghij'))
+            ->will($this->throwException($exception));
+        ;
+
+        $context = new GameContext();
+        $context->setGameRepository($repository);
+        $this->assertFalse($context->loadGame('abcdefghij'));
+    }
+
     public function testLoadExistingGame()
     {
-        $data = array(
-            'word' => 'java',
-            'attempts' => 2,
-            'found_letters' => array('j'),
-            'tried_letters' => array('j', 'x', 'h')
-        );
-
-        $game = $this->getMock(
-            'Sensio\Bundle\HangmanBundle\Game\Game',
-            array(),
-            array(),
-            '',
-            false
-        );
-
-        $data = $this->getMock(
-            'Sensio\Bundle\HangmanBundle\Entity\GameData',
-            array(),
-            array(),
-            '',
-            false
-        );
+        $data = $this->getGameDataMock();
         $data
             ->expects($this->once())
             ->method('toGame')
-            ->will($this->returnValue($game))
+            ->will($this->returnValue($this->getGameMock()))
         ;
 
         $repository = $this->getGameRepositoryMock();
@@ -46,6 +42,11 @@ class GameContextTest extends \PHPUnit_Framework_TestCase
 
         $context = new GameContext();
         $context->setGameRepository($repository);
+
+        $this->assertInstanceOf(
+            'Sensio\Bundle\HangmanBundle\Entity\GameRepositoryInterface',
+            $context->getGameRepository()
+        );
 
         $this->assertInstanceOf(
             'Sensio\Bundle\HangmanBundle\Game\Game',
@@ -66,7 +67,37 @@ class GameContextTest extends \PHPUnit_Framework_TestCase
         $context = new GameContext();
         $context->setWordList($wordList);
 
+        $this->assertInstanceOf(
+            'Sensio\Bundle\HangmanBundle\Game\WordList',
+            $context->getWordList()
+        );
         $this->assertEquals('java', $context->getRandomWord(4));
+    }
+
+    private function getGameMock()
+    {
+        $game = $this->getMock(
+            'Sensio\Bundle\HangmanBundle\Game\Game',
+            array(),
+            array(),
+            '',
+            false
+        );
+
+        return $game;
+    }
+
+    private function getGameDataMock()
+    {
+        $data = $this->getMock(
+            'Sensio\Bundle\HangmanBundle\Entity\GameData',
+            array(),
+            array(),
+            '',
+            false
+        );
+
+        return $data;
     }
 
     private function getWordListMock()
@@ -84,9 +115,13 @@ class GameContextTest extends \PHPUnit_Framework_TestCase
 
     private function getGameRepositoryMock()
     {
-        $repository = $this
-            ->getMock('Sensio\Bundle\HangmanBundle\Entity\GameRepositoryInterface', array(), array(), '', false)
-        ;
+        $repository = $this->getMock(
+            'Sensio\Bundle\HangmanBundle\Entity\GameRepositoryInterface',
+            array(),
+            array(),
+            '',
+            false
+        );
 
         return $repository;
     }

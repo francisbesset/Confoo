@@ -11,9 +11,7 @@ use Sensio\Bundle\HangmanBundle\Entity\GameRepositoryInterface;
 class GameContext
 {
     private $player;
-
     private $repository;
-
     private $wordList;
 
     /**
@@ -43,16 +41,6 @@ class GameContext
     public function getGameRepository()
     {
         return $this->repository;
-    }
-
-    public function setSecurityContext(SecurityContextInterface $securityContext)
-    {
-        $this->securityContext = $securityContext;
-    }
-
-    public function getSecurityContext()
-    {
-        return $this->securityContext;
     }
 
     public function setWordList(WordList $wordList)
