@@ -4,7 +4,6 @@ namespace Sensio\Bundle\HangmanBundle\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Sensio\Bundle\HangmanBundle\Game\Game;
-use Sensio\Bundle\HangmanBundle\Entity\GameData;
 use Sensio\Bundle\HangmanBundle\Entity\Player;
 
 class GameControllerTest extends WebTestCase
@@ -29,16 +28,8 @@ class GameControllerTest extends WebTestCase
         $player->setEmail('hugo@example.com');
         $player->encodePassword($factory->getEncoder($player));
 
-        /*
-        $game = new GameData();
-        $game->setPlayer($player);
-        $game->setWord('azerty');
-        $game->setToken('1234567890');
-        */
-
         $this->em = $container->get('doctrine.orm.default_entity_manager');
         $this->em->persist($player);
-//        $this->em->persist($game);
         $this->em->flush();
         $this->user = $player;
 
@@ -60,24 +51,18 @@ class GameControllerTest extends WebTestCase
         $this->client = null;
     }
 
-    private function authenticate($username, $password)
+    public function testLooseGame()
     {
-        $crawler = $this->client->request('GET', '/login');
+        $crawler = $this->authenticate('hhamon', 'secret');
 
-        $form = $crawler->selectButton('login')->form();
+        for ($i = 1; $i <= Game::MAX_ATTEMPTS; $i++) {
+            $crawler = $this->playLetter('X');
+        }
 
-        return $this->client->submit($form, array(
-            '_username' => $username,
-            '_password' => $password,
-        ));
-    }
-
-    private function playWord($word)
-    {
-        $crawler = $this->client->getCrawler();
-        $form = $crawler->selectButton('Let me guess...')->form();
-
-        return $this->client->submit($form, array('word' => $word));
+        $this->assertEquals(
+            'Game Over!',
+            $crawler->filter('#content > h2:first-child')->text()
+        );
     }
 
     public function testGuessWord()
@@ -85,8 +70,7 @@ class GameControllerTest extends WebTestCase
         $crawler = $this->authenticate('hhamon', 'secret');
 
         foreach (array('H', 'X', 'P') as $letter) {
-            $link = $crawler->selectLink($letter)->link();
-            $crawler = $this->client->click($link);
+            $crawler = $this->playLetter($letter);
         }
 
         $this->assertEquals(
@@ -95,13 +79,27 @@ class GameControllerTest extends WebTestCase
         );
     }
 
-    public function testForbidWordAction()
+    /**
+     * @dataProvider provideUris
+     *
+     */
+    public function testForbidAction($uri)
     {
         $this->client->followRedirects(false);
 
         $this->authenticate('hhamon', 'secret');
-        $this->client->request('POST', '/game/1234567890/word');
+        $this->client->request('POST', $uri);
         $this->assertTrue($this->client->getResponse()->isNotFound());
+    }
+
+    public function provideUris()
+    {
+        return array(
+            array('/game/1234567890/word'),
+            array('/game/1234567890/letter/X'),
+            array('/game/1234567890/won'),
+            array('/game/1234567890/hanged'),
+        );
     }
 
     public function testInvalidWord()
@@ -126,5 +124,33 @@ class GameControllerTest extends WebTestCase
             'Congratulations!',
             $crawler->filter('#content > h2:first-child')->text()
         );
+    }
+
+    private function authenticate($username, $password)
+    {
+        $crawler = $this->client->request('GET', '/login');
+
+        $form = $crawler->selectButton('login')->form();
+
+        return $this->client->submit($form, array(
+            '_username' => $username,
+            '_password' => $password,
+        ));
+    }
+
+    private function playLetter($letter)
+    {
+        $crawler = $this->client->getCrawler();
+        $link = $crawler->selectLink($letter)->link();
+
+        return $this->client->click($link);
+    }
+
+    private function playWord($word)
+    {
+        $crawler = $this->client->getCrawler();
+        $form = $crawler->selectButton('Let me guess...')->form();
+
+        return $this->client->submit($form, array('word' => $word));
     }
 }

@@ -12,7 +12,7 @@ class WordList
 
     private $dictionaries;
 
-    public function __construct(array $dictionaries)
+    public function __construct(array $dictionaries = array())
     {
         $this->words = array();
         $this->dictionaries = $dictionaries;
